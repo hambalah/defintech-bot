@@ -19,7 +19,7 @@ print()
 def login(update, context):
     update.message.reply_text('(url link to finverse)')
 
-
+ 
 
 
 def handle_message(update,context):
@@ -36,7 +36,7 @@ def handle_message(update,context):
     if 'Account Balance' in update.message.text:
         update.message.reply_text(f'{update.message.chat.first_name}, your account balance is {current_account["@shawn"]["balance"]}')
     if 'Funds Transfer' in update.message.text:
-        update.message.reply_text(f'please input receivers handle and amount')
+        update.message.send_message(f'please input receivers handle and amount')
     if 'Account Details' in update.message.text:
         update.message.reply_text(f'name: {update.message.chat.first_name}, account balance: XXX')
 
