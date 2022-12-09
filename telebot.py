@@ -14,6 +14,7 @@ database = {'@shawn':{'bank':'posb', 'currency':'sgd', 'account':'12345', 'balan
 #update with database based on telehandle when logged in
 current_account = ''
 print('hello world')
+print()
 
 def login(update, context):
     update.message.reply_text('(url link to finverse)')
