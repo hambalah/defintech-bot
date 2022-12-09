@@ -3,10 +3,13 @@ from requests import *
 from telegram import *
 
 
+
 INPUT = None
 
 # updater = Updater(token='5668531051:AAEeX4OWwO1sOPvIYMI-2nUyhTcz_UWQVH4',use_context=True)
 updater = Updater(token='5828726712:AAFx7vMV1rv3oiqJFyEhx76HpY2bqU_iVXI',use_context=True)
+
+# bot = TeleBot("5828726712:AAFx7vMV1rv3oiqJFyEhx76HpY2bqU_iVXI")
 dp = updater.dispatcher
 
 #telehamdle linked with account details
@@ -23,14 +26,45 @@ def login(update, context):
     update.message.reply_text('(url link to finverse)')
 
 def transfer_process (update, context):
-    flag = True
+    # await update.message.reply_text("What is the Recpient's Telegram Handle?", reply_markup=ReplyKeyboardRemove)
+    # receiverTeleId = update.message.text
+    # await update.message.reply_text("What is the Transfer Amount?", reply_markup=ReplyKeyboardRemove)
+    # transferAmount = update.message.text
+    
     receiverTeleId = None
     while receiverTeleId == None:
-        update.message.reply_text(f"Please Input Receivers' handle")
+        update.message.reply_text("What is the Recpient's Telegram Handle?")
         receiverTeleId = update.message.text
-    update.message.reply_text(f"Please Input Transfer Amount")
-    # updater.idle()
-    # transferAmount = float(update.message.reply_text(f'please input Transfer amount'))
+    
+    transferAmount = None
+    while transferAmount == None:
+        update.message.reply_text("What is the Transfer Amount?")
+        transferAmount = update.message.text
+
+    # def getname (update, context):
+    #     msg = context.bot.send_message(chat_id=update.effective_chat.id, text= "What is the Recpient's Telegram Handle?")
+    #     receiverTeleId = update.message.text
+    #     bot.register_next_step_handler(msg, getamt)
+    
+    # def getamt (update, context):
+    #     context.bot.send_message(chat_id=update.effective_chat.id, text= "What is the Transfer Amount?")
+    #     transferAmount = update.message.text
+
+    # if receiverTeleId == None:
+    #     getname(update, context)
+
+    print(receiverTeleId, transferAmount)
+
+    # update.message.text == None
+
+    # receiverTeleId = update.message.text
+    # if receiverTeleId == None:
+    #     update.message.reply_text(f"Please Input Receivers' handle")
+    #     receiverTeleId = update.message.text
+
+    # update.message.reply_text(f"Please Input Transfer Amount")
+    # # updater.idle()
+    # # transferAmount = float(update.message.reply_text(f'please input Transfer amount'))
     
 
 def handle_message(update,context):
@@ -57,6 +91,9 @@ def startCommands(update: Update, context:CallbackContext):
     print(update)
     context.bot.send_message(chat_id=update.effective_chat.id, text='WELCOME!',reply_markup = ReplyKeyboardMarkup(buttons))
 
+
+# bot.enable_save_next_step_handlers(delay=2)
+# bot.load_next_step_handlers()
 
 dp.add_handler(CommandHandler('start', startCommands))
 dp.add_handler(MessageHandler(Filters.text, handle_message))
