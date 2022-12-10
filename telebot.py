@@ -6,20 +6,51 @@ updater = Updater(token='5668531051:AAEeX4OWwO1sOPvIYMI-2nUyhTcz_UWQVH4',use_con
 dp = updater.dispatcher
 
 #telehamdle linked with account details
-database = {'@shawn':{'bank':'posb', 'currency':'sgd', 'account':'12345', 'balance':100 }, 
-            '@kaydon':{'bank':'maybank','currency':'rmb','account':'23456','balance':200},
-            '@drago':{'bank':'ocbc','currency':'hkd','account':'34567','balance':300}}
+database = {'@shawn':{'bank':'posb', 'currency':'sgd', 'account':'12345', 'balance':100, 'pin':''}, 
+            '@kaydon':{'bank':'maybank','currency':'rmb','account':'23456','balance':200, 'pin':''},
+            '@drago':{'bank':'ocbc','currency':'hkd','account':'34567','balance':300, 'pin':''}}
 
 
 #update with database based on telehandle when logged in
 current_account = ''
-print('hello world')
-print()
+logged_in = False
 
-def login(update, context):
-    update.message.reply_text('(url link to finverse)')
+#must login first, to retrieve the ID.
+def login(update: Update, context:CallbackContext):#can include a separate function that returns the response
+    global logged_in 
+    if logged_in == False:
+        context.bot.send_message(chat_id=update.effective_chat.id, text=f'https://www.finverse.com/')
+        global user 
+        global current_account
+        user = update.message.chat.first_name
+        current_account = database[user]
+        logged_in = True
+        print(update)
+        print(current_account)
+        print(user)
+    else:
+        context.bot.send_message(chat_id=update.effective_chat.id, text=f'logged in already.')
+dp.add_handler(CommandHandler('login', login))
 
- 
+def help(update: Update, context: CallbackContext):
+    displayed = '/login --> login to finverse\n/start --> view functions\n/createpin --> create pin for transactions, "type the command and pin together and send it"\n'
+    context.bot.send_message(chat_id=update.effective_chat.id, text=displayed)
+dp.add_handler(CommandHandler('help', help))
+
+def createpin(update: Update, context: CallbackContext):
+    if logged_in == True:
+        #havent update in database
+        pin = ' '.join(context.args)
+        #pointer that updates both the current_account and database
+        current_account['pin'] = pin
+        displayed=f'Your pin has been created, {pin}.'
+        context.bot.send_message(chat_id=update.effective_chat.id, text=displayed)
+        print(current_account)
+        print(database)
+    else:
+        context.bot.send_message(chat_id=update.effective_chat.id, text='please /login first')
+pin_handler = CommandHandler('createpin', createpin)
+dp.add_handler(pin_handler)
 
 
 def handle_message(update,context):
