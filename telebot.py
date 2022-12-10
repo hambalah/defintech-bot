@@ -10,10 +10,10 @@ dp = updater.dispatcher
 
 #telehamdle linked with account details
 
-database = {'shawn':{'bank':'posb', 'currency':'sgd', 'account':'12345', 'balance':100, 'pin':''}, 
-            'kaydon':{'bank':'maybank','currency':'rmb','account':'23456','balance':200, 'pin':''},
-            'nmywrld':{'bank':'ocbc','currency':'hkd','account':'34567','balance':300, 'pin':'', 'userID':''},
-            'debbieloh':{'bank':'ocbc','currency':'hkd','account':'67890','balance':300, 'pin':'', 'userID':''}}
+database = {'shawn':{'bank':'posb', 'currency':'sgd', 'account':'12345', 'balance':100, 'pin':'', 'userID':''}, 
+            'kaydon':{'bank':'maybank','currency':'rmb','account':'23456','balance':200, 'pin':'', 'userID':''},
+            'nmywrld':{'bank':'ocbc','currency':'hkd','account':'34567','balance':300, 'pin':'', 'userID':''}
+            }
 
 
 
