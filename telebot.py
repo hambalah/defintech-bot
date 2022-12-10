@@ -16,7 +16,7 @@ current_account = ''
 logged_in = False
 
 #must login first, to retrieve the ID.
-def login(update: Update, context:CallbackContext):#can include a separate function that returns the response
+def login(update: Update, context:CallbackContext):
     global logged_in 
     if logged_in == False:
         context.bot.send_message(chat_id=update.effective_chat.id, text=f'https://www.finverse.com/')
@@ -39,7 +39,6 @@ dp.add_handler(CommandHandler('help', help))
 
 def createpin(update: Update, context: CallbackContext):
     if logged_in == True:
-        #havent update in database
         pin = ' '.join(context.args)
         #pointer that updates both the current_account and database
         current_account['pin'] = pin
@@ -54,16 +53,6 @@ dp.add_handler(pin_handler)
 
 
 def handle_message(update,context):
-    # text = str(update.message.text).lower()
-    # response = ''
-    # if 'hello' in text:
-    #     response = 'Hellooo!'
-    #     update.message.reply_text(f"{response} {update['message']['chat']['first_name']}.")
-    # if 'how are you' in text:
-    #     response = 'GRAAAAPEEEE!'
-    #     update.message.reply_text(f"I'm {response}, {update['message']['chat']['first_name']}.")
-    #     update.message.reply_text(f"how are you {update.message.chat.first_name}.")
-    # #update.message.chat.first_name == update['message']['chat']['first_name']
     if 'Account Balance' in update.message.text:
         update.message.reply_text(f'{update.message.chat.first_name}, your account balance is {current_account["@shawn"]["balance"]}')
     if 'Funds Transfer' in update.message.text:
@@ -82,12 +71,4 @@ dp.add_handler(CommandHandler('login', login))
 
 updater.start_polling()
 
-# if __name__ == '__main__':
-#     Token = '5668531051:AAEeX4OWwO1sOPvIYMI-2nUyhTcz_UWQVH4'
-#     updater = Updater(Token, use_context=True)
-#     dp = updater.dispatcher
-#     dp.add_handler(MessageHandler(Filters.text, handle_message))
-#     dp.add_handler(CommandHandler('start',startCommands))
-#     updater.start_polling(1.0)
-#     updater.idle()
 
