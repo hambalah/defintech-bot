@@ -84,10 +84,6 @@ dp.add_handler(CommandHandler('login', login))
 
 updater.start_polling()
 
-
-# bot.enable_save_next_step_handlers(delay=2)
-# bot.load_next_step_handlers()
-
 # if __name__ == '__main__':
 #     Token = '5668531051:AAEeX4OWwO1sOPvIYMI-2nUyhTcz_UWQVH4'
 #     updater = Updater(Token, use_context=True)
