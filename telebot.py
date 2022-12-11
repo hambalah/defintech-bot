@@ -32,7 +32,7 @@ def login(update: Update, context:CallbackContext):
         context.bot.send_message(chat_id=update.effective_chat.id, text=f'https://www.finverse.com/')
         global user 
         global current_account
-        user = update.message.chat.first_name
+        user = update.message.chat.username
         current_account = database[user]
         logged_in = True
         print(update)
