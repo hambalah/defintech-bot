@@ -32,6 +32,8 @@ dp = updater.dispatcher
 #             }
 local_database = {}
 
+db = ref.get()
+
 city_info = {'Singapore':{'bank': ['UOB', 'DBS', 'OCBC'], 'currency': 'sgd'}, 
             'Malaysia':{'bank':['MayBank', 'AHB'], 'currency':'rmb'}, 
             'Indonesia': {'bank': ['RHB', 'BNI'], 'currency':'idr'},
@@ -46,7 +48,7 @@ logged_in = False
 verified = False
 displayed = ''
 
-### KYC Process
+#KYC Process / Sign up
 kycImgState, kycDetailsState, kycCountryState, kycBankState = range(4)
 
 def kyc_start(update: Update, context: CallbackContext):
@@ -119,7 +121,7 @@ def kyc_bank(update: Update, context: CallbackContext):
     #updating bank details
     local_database[update.callback_query.from_user.username]['bank'] = update.callback_query.data
 
-    #creating a new rng account number
+    #creating a new rng account number to facilitate simulated transactions
     newAccountNumber = False
     while newAccountNumber != True:
         accountNumber = random.randint(10000,99999)
@@ -305,7 +307,6 @@ def handle_message(update, context):
     if 'Account Balance' in update.message.text:
         update.message.reply_text(f'{update.message.chat.username}, your account balance is {local_database[update.message.chat.username]["balance"]}')
         update.message.reply_text(f'Type /start for more services')
-
     # if 'Account Details' in update.message.text:
     #     update.message.reply_text(f'name: {update.message.chat.first_name}, account balance: XXX')
 
@@ -372,6 +373,8 @@ kyc_process_conv = ConversationHandler(
 )
 
 
+
+dp.add_handler(CommandHandler('Deck', projDeck))
 dp.add_handler(login_conv)
 dp.add_handler(transaction_process_conv)
 dp.add_handler(add_recipient_conv)
@@ -382,6 +385,18 @@ dp.add_handler(CommandHandler('login', login))
 
 updater.start_polling()
 
+# def startCommands(update: Update, context:CallbackContext):
+#     global db
+#     if update.message.chat.username not in db.keys():
+#         buttons = [[KeyboardButton('Sign Up (KYC)')],[KeyboardButton('Deck')]]
+#         context.bot.send_message(chat_id=update.effective_chat.id, text=f'Welcome, {update.message.chat.username}! \n To use DeFintech Bot, please KYC and sign up! :)',reply_markup = ReplyKeyboardMarkup(buttons, one_time_keyboard=True))
+#     else: 
+#         local_database[update.message.chat.username]["userID"] = chat_id=update.effective_chat.id
+#         buttons = [[KeyboardButton('Account Balance')], [KeyboardButton('/Transfer')], [KeyboardButton('/AddRecipient')]]
+#         print(update)
+#         print()
+#         print(local_database)
+#     context.bot.send_message(chat_id=update.effective_chat.id, text='WELCOME!',reply_markup = ReplyKeyboardMarkup(buttons, one_time_keyboard=True))
 
 
 
@@ -390,5 +405,3 @@ updater.start_polling()
 #   if in db, refresh loginIDtoken or pin (have to decide)
 #   see full list of commands
     # - lsit all commands
-
-
