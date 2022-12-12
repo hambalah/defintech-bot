@@ -183,7 +183,7 @@ def handle_message(update, context):
     global transferAmount
 
     if 'Account Balance' in update.message.text:
-        update.message.reply_text(f'{update.message.chat.username}, your account balance is {database[update.message.chat.username]["balance"]}')
+        update.message.reply_text(f'{update.message.chat.username}, your account balance is {local_database[update.message.chat.username]["balance"]}')
 
     if 'Account Details' in update.message.text:
         update.message.reply_text(f'name: {update.message.chat.first_name}, account balance: XXX')
