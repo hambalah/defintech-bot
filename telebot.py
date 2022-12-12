@@ -254,6 +254,8 @@ def add_recipient_name (update, context):
 
 def add_recipient_handle (update, context):
     context.user_data["recipientHandle"] = update.message.text
+    context.bot.send_message(chat_id=update.effective_chat.id, text='<Finverse link goes here>')
+
     local_database[update.message.chat.username]["addressBook"][context.user_data["recipientName"]] = update.message.text
     context.bot.send_message(chat_id=update.effective_chat.id, text= "New Recepient Successfuly Added! Type /start to access services.")
     return ConversationHandler.END
@@ -370,11 +372,11 @@ kyc_process_conv = ConversationHandler(
 )
 
 
-dp.add_handler(CommandHandler('start', startCommands))
 dp.add_handler(login_conv)
 dp.add_handler(transaction_process_conv)
 dp.add_handler(add_recipient_conv)
 dp.add_handler(kyc_process_conv)
+dp.add_handler(CommandHandler('start', startCommands))
 dp.add_handler(MessageHandler(Filters.text, handle_message))
 dp.add_handler(CommandHandler('login', login))
 
