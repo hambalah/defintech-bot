@@ -22,12 +22,13 @@ dp = updater.dispatcher
 #telehamdle linked with account details
 
 
-local_database = {'shawntyw':{'bank':'posb', 'currency':'sgd', 'account':'12345', 'balance':100, 'pin':'1', 'userID':'', 'verified':True, "addressBook":{}}, 
-            'kaydong':{'bank':'maybank','currency':'rmb','account':'23456','balance':200, 'pin':'1', 'userID':'', 'verified':False, "addressBook":{}},
-            # 'nmywrld':{'bank':'ocbc','currency':'hkd','account':'34567','balance':300, 'pin':'1', 'userID':'', 'verified':False, "session": False, "addressBook":{}},
-            'ivyyytan':{'bank':'ocbc','currency':'hkd','account':'78990','balance':300, 'pin':'1', 'userID':'', 'verified':True, "addressBook":{}},
-            'hyperpencil':{'bank':'ocbc','currency':'hkd','account':'78990','balance':300, 'pin':'1', 'userID':'', 'verified':True, "addressBook":{}}
-            }
+# local_database = {'shawntyw':{'bank':'posb', 'currency':'sgd', 'account':'12345', 'balance':100, 'pin':'1', 'userID':'', 'verified':True, "addressBook":{}}, 
+#             'kaydong':{'bank':'maybank','currency':'rmb','account':'23456','balance':200, 'pin':'1', 'userID':'', 'verified':False, "addressBook":{}},
+#             # 'nmywrld':{'bank':'ocbc','currency':'hkd','account':'34567','balance':300, 'pin':'1', 'userID':'', 'verified':False, "session": False, "addressBook":{}},
+#             'ivyyytan':{'bank':'ocbc','currency':'hkd','account':'78990','balance':300, 'pin':'1', 'userID':'', 'verified':True, "addressBook":{}},
+#             'hyperpencil':{'bank':'ocbc','currency':'hkd','account':'78990','balance':300, 'pin':'1', 'userID':'', 'verified':True, "addressBook":{}}
+#             }
+local_database = {}
 
 city_info = {'Singapore':{'bank': ['UOB', 'DBS', 'OCBC'], 'currency': 'sgd'}, 
             'Malaysia':{'bank':['MayBank', 'AHB'], 'currency':'rmb'}, 
@@ -88,6 +89,7 @@ def kyc_details(update: Update, context: CallbackContext):
     for city in city_info.keys():
         buttons.append(InlineKeyboardButton(city, callback_data=city))
     reply_markup = InlineKeyboardMarkup(build_menu(buttons, n_cols=1))
+    context.bot.send_message(chat_id=update.effective_chat.id, text='<Finverse link goes here>',reply_markup = reply_markup)
     context.bot.send_message(chat_id=update.effective_chat.id, text='Please select your country of residence',reply_markup = reply_markup)
 
     return kycCountryState
@@ -186,16 +188,16 @@ startstate, receiverstate, trfamtstate, confirmationstate = range(4)
 
 def transfer_process(update, context):
     # context.bot.send_message(chat_id=update.effective_chat.id, text="Please Input Receivers' Telegram handle (without @)")
-    context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Enter Your Pin")
+    context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Enter Your Password")
     return startstate
 
 def transfer_process_start (update, context):
     context.user_data["pin"] = update.message.text
     if context.user_data["pin"] != local_database[update.message.chat.username]["pin"]:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Pin Incorrect!")
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Password Incorrect!")
         return ConversationHandler.END
     else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Pin Confirmed!")
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Password Confirmed!")
         buttons = []
         for key in local_database[update.message.chat.username]["addressBook"].keys():
             buttons.append([KeyboardButton(f'{key}')])
@@ -228,6 +230,7 @@ def transfer_process_confirm(update, context):
         
         context.bot.send_message(chat_id=update.effective_chat.id, text=f'Transfer Successful!')
         context.bot.send_message(chat_id=local_database[context.user_data["receiverTeleId"]]['userID'], text='you have received money!')
+        context.bot.send_message(chat_id=local_database[context.user_data["receiverTeleId"]]['userID'], text=f'@{update.message.chat.username} has sent you ${context.user_data["transferAmount"]}')
         return ConversationHandler.END
     else:
         return startstate
@@ -260,16 +263,17 @@ pinCreate, pinConfirm, pinState, = range(3)
 
 def login_conv_start (update, context):
     if local_database[update.message.chat.username]["pin"] == "":
-        context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Enter A New Pin")
+        context.bot.send_message(chat_id=update.effective_chat.id, text= "You have to create a password before continuing.")
+        context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Enter A New Password")
         return pinCreate
     else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Enter Your Pin")
+        context.bot.send_message(chat_id=update.effective_chat.id, text= "Enter Password To Unlock Account")
         return pinState
     
 def login_conv_create (update, context):
     global tempPin
     tempPin = update.message.text
-    context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Re-enter Your New Pin")
+    context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Re-enter Your New Password")
     return pinConfirm
 
 def login_conv_confirm (update, context):
@@ -278,7 +282,7 @@ def login_conv_confirm (update, context):
         return ConversationHandler.END
     else: 
         local_database[update.message.chat.username]["pin"] = tempPin
-        context.bot.send_message(chat_id=update.effective_chat.id, text= "Pin Successfully Created! type /start to access services")
+        context.bot.send_message(chat_id=update.effective_chat.id, text= "Password Successfully Created! type /start to access services")
         return ConversationHandler.END
 
 
