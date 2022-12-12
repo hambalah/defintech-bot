@@ -11,12 +11,12 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
-from user_db import *
+# from user_db import *
 
 
 # updater = Updater(token='5668531051:AAEeX4OWwO1sOPvIYMI-2nUyhTcz_UWQVH4',use_context=True) #shawn's bot
-# updater = Updater(token='5828726712:AAH2mCRI9FKiQmZBgM_SEmHeQhMl23kEK88',use_context=True) #drago's bot
-updater = Updater(token='5860916892:AAF8lhYm-CZiNigpGxbJehVAckG6w2ekHhk',use_context=True) #kaydon's bot
+updater = Updater(token='5828726712:AAH2mCRI9FKiQmZBgM_SEmHeQhMl23kEK88',use_context=True) #drago's bot
+# updater = Updater(token='5860916892:AAF8lhYm-CZiNigpGxbJehVAckG6w2ekHhk',use_context=True) #kaydon's bot
 
 
 dp = updater.dispatcher
@@ -87,11 +87,11 @@ def kyc_details(update: Update, context: CallbackContext):
     global city_info
     print('--- kyc_details ---')
 
+    context.bot.send_message(chat_id=update.effective_chat.id, text='<Finverse link goes here>')
     buttons = []
     for city in city_info.keys():
         buttons.append(InlineKeyboardButton(city, callback_data=city))
     reply_markup = InlineKeyboardMarkup(build_menu(buttons, n_cols=1))
-    context.bot.send_message(chat_id=update.effective_chat.id, text='<Finverse link goes here>',reply_markup = reply_markup)
     context.bot.send_message(chat_id=update.effective_chat.id, text='Please select your country of residence',reply_markup = reply_markup)
 
     return kycCountryState
@@ -190,7 +190,7 @@ startstate, receiverstate, trfamtstate, confirmationstate = range(4)
 
 def transfer_process(update, context):
     # context.bot.send_message(chat_id=update.effective_chat.id, text="Please Input Receivers' Telegram handle (without @)")
-    context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Enter Your Password")
+    context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Enter Password To Access Transfer Function")
     return startstate
 
 def transfer_process_start (update, context):
@@ -313,7 +313,7 @@ def startCommands(update: Update, context:CallbackContext):
     
     elif local_database[update.message.chat.username]["session"] == False:
         local_database[update.message.chat.username]["userID"] = update.effective_chat.id
-        buttons = [[KeyboardButton('/PinLogin')]]
+        buttons = [[KeyboardButton('/Login')]]
     
     else:
         local_database[update.message.chat.username]["userID"] = update.effective_chat.id
@@ -330,7 +330,7 @@ def cancel (update, context):
 
 
 login_conv = ConversationHandler(
-    entry_points=[CommandHandler(f'PinLogin', login_conv_start)],
+    entry_points=[CommandHandler(f'Login', login_conv_start)],
     states={
         pinCreate : [MessageHandler(~Filters.command, callback=login_conv_create)],
         pinConfirm : [MessageHandler(~Filters.command, callback=login_conv_confirm)],
