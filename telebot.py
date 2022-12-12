@@ -14,9 +14,9 @@ dp = updater.dispatcher
 
 database = {'shawntyw':{'bank':'posb', 'currency':'sgd', 'account':'12345', 'balance':100, 'pin':'1', 'userID':''}, 
             'kaydong':{'bank':'maybank','currency':'rmb','account':'23456','balance':200, 'pin':'1', 'userID':''},
-            'nmywrld':{'bank':'ocbc','currency':'hkd','account':'34567','balance':300, 'pin':'1', 'userID':''},
+            'nmywrld':{'bank':'ocbc','currency':'hkd','account':'34567','balance':300, 'pin':'1', 'userID':'', "addressBook":{}},
             'ivyyytan':{'bank':'ocbc','currency':'hkd','account':'78990','balance':300, 'pin':'1', 'userID':''},
-            'hyperpencil':{'bank':'ocbc','currency':'hkd','account':'78990','balance':300, 'pin':'1', 'userID':''}
+            'hyperpencil':{'bank':'ocbc','currency':'hkd','account':'78990','balance':300, 'pin':'1', 'userID':'', "addressBook":{}}
             }
 
 
@@ -65,6 +65,26 @@ pin_handler = CommandHandler('createpin', createpin)
 dp.add_handler(pin_handler)
 
 
+def handle_message(update, context):
+    global transferFlag
+    global receiverTeleId
+    global transferAmount
+
+    if 'Account Balance' in update.message.text:
+        update.message.reply_text(f'{update.message.chat.username}, your account balance is {database[update.message.chat.username]["balance"]}')
+
+    if 'Account Details' in update.message.text:
+        update.message.reply_text(f'name: {update.message.chat.first_name}, account balance: XXX')
+
+
+def startCommands(update: Update, context:CallbackContext):
+    database[update.message.chat.username]["userID"] = chat_id=update.effective_chat.id
+    buttons = [[KeyboardButton('Account Balance')], [KeyboardButton('/Transfer')], [KeyboardButton('/AddRecipient')]]
+    print(update)
+    print()
+    print(database)
+    context.bot.send_message(chat_id=update.effective_chat.id, text='WELCOME!',reply_markup = ReplyKeyboardMarkup(buttons, one_time_keyboard=True))
+
 # transfer process
 # used for transfer processx
 startstate, receiverstate, trfamtstate, confirmationstate = range(4)
@@ -81,13 +101,17 @@ def transfer_process_start (update, context):
         return ConversationHandler.END
     else:
         context.bot.send_message(chat_id=update.effective_chat.id, text="Pin Confirmed!")
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Input Receivers' Telegram handle (without @)")
+        # buttons = [[KeyboardButton('Account Balance')], [KeyboardButton('/Transfer')], [KeyboardButton('/AddRecipient')]]
+        buttons = []
+        for key in database[update.message.chat.username]["addressBook"].keys():
+            buttons.append([KeyboardButton(f'{key}')])
+        
+        context.bot.send_message(chat_id=update.effective_chat.id, text='Please select Recipient!',reply_markup = ReplyKeyboardMarkup(buttons, one_time_keyboard=True))
+        # context.bot.send_message(chat_id=update.effective_chat.id, text="Please Input Receivers' Telegram handle (without @)")
         return receiverstate
-    # context.bot.send_message(chat_id=update.effective_chat.id, text="Please Input Transfer Amount")
-    return trfamtstate
 
 def transfer_process_name (update, context):
-    context.user_data["receiverTeleId"] = update.message.text
+    context.user_data["receiverTeleId"] = database[update.message.chat.username]["addressBook"][update.message.text]
     context.bot.send_message(chat_id=update.effective_chat.id, text="Please Input Transfer Amount")
     return trfamtstate
 
@@ -97,13 +121,13 @@ def transfer_process_amt (update, context):
         context.bot.send_message(chat_id=update.effective_chat.id, text=f'You Do Not Have Enough Funds!')
         return startstate
     else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text=f'You want to send ${context.user_data["transferAmount"]} to @{context.user_data["receiverTeleId"]}?')
+        buttons = [[KeyboardButton('Yes')], [KeyboardButton('No')]]
+        context.bot.send_message(chat_id=update.effective_chat.id, text=f'You want to send ${context.user_data["transferAmount"]} to @{context.user_data["receiverTeleId"]}?', reply_markup = ReplyKeyboardMarkup(buttons, one_time_keyboard=True))
         print(context.user_data)
         return confirmationstate
     
-
 def transfer_process_confirm(update, context):
-    if update.message.text == "yes":
+    if update.message.text == "Yes":
         context.bot.send_message(chat_id=update.effective_chat.id, text=f'A Request to transfer ${context.user_data["transferAmount"]} to @{context.user_data["receiverTeleId"]} has been made.')
         database[update.message.chat.username]["balance"] -= context.user_data["transferAmount"]
         database[context.user_data["receiverTeleId"]]["balance"] += context.user_data["transferAmount"]
@@ -120,28 +144,6 @@ def transfer_process_confirm(update, context):
 
 #     return ConversationHandler.END
 
-
-def handle_message(update, context):
-    global transferFlag
-    global receiverTeleId
-    global transferAmount
-
-    if 'Account Balance' in update.message.text:
-        update.message.reply_text(f'{update.message.chat.username}, your account balance is {database[update.message.chat.username]["balance"]}')
-
-    if 'Account Details' in update.message.text:
-        update.message.reply_text(f'name: {update.message.chat.first_name}, account balance: XXX')
-
-
-def startCommands(update: Update, context:CallbackContext):
-    database[update.message.chat.username]["userID"] = chat_id=update.effective_chat.id
-    buttons = [[KeyboardButton('Account Balance')], [KeyboardButton('/Transfer')], [KeyboardButton('Change Bank Account')]]
-    print(update)
-    print()
-    print(database)
-    context.bot.send_message(chat_id=update.effective_chat.id, text='WELCOME!',reply_markup = ReplyKeyboardMarkup(buttons, one_time_keyboard=True))
-
-
 transaction_process_conv = ConversationHandler(
     entry_points=[CommandHandler(f'Transfer', transfer_process)],
     states={
@@ -153,9 +155,39 @@ transaction_process_conv = ConversationHandler(
     fallbacks=[CommandHandler('start', startCommands)]
 )
 
+# New recipient process
+
+recipientName , recipientHandle = range(2)
+
+def newRecipient (update, context):
+    context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Enter New Recipient Name")
+    return recipientName
+
+def add_recipient_name (update, context):
+    context.user_data["recipientName"] = update.message.text
+    database[update.message.chat.username]["addressBook"][update.message.text] = ""
+    context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Enter New Recipient telegram Handle (without @)")
+    return recipientHandle
+
+def add_recipient_handle (update, context):
+    context.user_data["recipientHandle"] = update.message.text
+    database[update.message.chat.username]["addressBook"][context.user_data["recipientName"]] = update.message.text
+    return ConversationHandler.END
+
+add_recipient_conv = ConversationHandler(
+    entry_points= [CommandHandler(f'AddRecipient', newRecipient)],
+    states = {
+        recipientName : [MessageHandler(Filters.text, callback= add_recipient_name)],
+        recipientHandle : [MessageHandler(Filters.text, callback= add_recipient_handle)]
+    },
+    fallbacks=[CommandHandler('start', startCommands)]
+
+)
+
 
 dp.add_handler(CommandHandler('start', startCommands))
 dp.add_handler(transaction_process_conv)
+dp.add_handler(add_recipient_conv)
 dp.add_handler(MessageHandler(Filters.text, handle_message))
 dp.add_handler(CommandHandler('login', login))
 
