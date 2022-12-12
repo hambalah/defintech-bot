@@ -11,19 +11,19 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 # updater = Updater(token='5668531051:AAEeX4OWwO1sOPvIYMI-2nUyhTcz_UWQVH4',use_context=True) #shawn's bot
-updater = Updater(token='5828726712:AAH2mCRI9FKiQmZBgM_SEmHeQhMl23kEK88',use_context=True) #drago's bot
-# updater = Updater(token='5860916892:AAF8lhYm-CZiNigpGxbJehVAckG6w2ekHhk',use_context=True) #kaydon's bot
+# updater = Updater(token='5828726712:AAH2mCRI9FKiQmZBgM_SEmHeQhMl23kEK88',use_context=True) #drago's bot
+updater = Updater(token='5860916892:AAF8lhYm-CZiNigpGxbJehVAckG6w2ekHhk',use_context=True) #kaydon's bot
 
 
 dp = updater.dispatcher
 
 #telehamdle linked with account details
 
-local_database = {'shawntyw':{'bank':'posb', 'currency':'sgd', 'account':'12345', 'balance':100, 'pin':'1', 'userID':''}, 
-            'kaydong':{'bank':'maybank','currency':'rmb','account':'23456','balance':200, 'pin':'1', 'userID':''},
-            'nmywrld':{'bank':'ocbc','currency':'hkd','account':'34567','balance':300, 'pin':'1', 'userID':''},
-            'ivyyytan':{'bank':'ocbc','currency':'hkd','account':'78990','balance':300, 'pin':'1', 'userID':''},
-            'hyperpencil':{'bank':'ocbc','currency':'hkd','account':'78990','balance':300, 'pin':'1', 'userID':''}
+local_database = {'shawntyw':{'bank':'posb', 'currency':'sgd', 'account':'12345', 'balance':100, 'pin':'1', 'userID':'', 'verified':True}, 
+            'kaydong':{'bank':'maybank','currency':'rmb','account':'23456','balance':200, 'pin':'1', 'userID':'', 'verified':False},
+            'nmywrld':{'bank':'ocbc','currency':'hkd','account':'34567','balance':300, 'pin':'1', 'userID':'', 'verified':True},
+            'ivyyytan':{'bank':'ocbc','currency':'hkd','account':'78990','balance':300, 'pin':'1', 'userID':'', 'verified':True},
+            'hyperpencil':{'bank':'ocbc','currency':'hkd','account':'78990','balance':300, 'pin':'1', 'userID':'', 'verified':True}
             }
 
 city_info = {'Singapore':{'bank': ['UOB', 'DBS', 'OCBC'], 'currency': 'sgd'}, 
@@ -49,29 +49,28 @@ def kyc_start(update: Update, context: CallbackContext):
     verified = local_database[update.message.chat.username]['verified']
     if verified == False:
         print('not verified')
-        context.bot.send_message(chat_id=update.effective_chat.id, text='Starting your KYC process.')
+        context.bot.send_message(chat_id=update.effective_chat.id, text='Starting your KYC process.', reply_markup=ReplyKeyboardRemove())
         context.bot.send_photo(chat_id=update.effective_chat.id, photo=open('./img/ic_w_date.jpg', 'rb'), caption='Please upload an image of yourself holding your IC, with the current date and time clearly visible.')
-        return kycDetailsState
+        return kycImgState
     else:
         context.bot.send_message(chat_id=update.effective_chat.id, text=f'You are already verified.')
     return ConversationHandler.END
 
 def kyc_img(update: Update, context: CallbackContext):
+    global verified
     print('--- kyc_img ---')
     # context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO)
-    print(update.message.document)
-    print(update.message.text)
-    if update.message.document == None:
+    photo_file = update.message.photo[-1].get_file()
+    print(photo_file)
+    if photo_file == None:
         context.bot.send_message(chat_id=update.effective_chat.id, text='Please upload an image of yourself!')
         return kycImgState
     else:
-        file_name = update.message.document.file_name
-        file_info = context.bot.get_file(update.message.document.file_id)
-        download_file = context.bot.download_file(file_info.file_path)
-        print(file_name, download_file)
-        with open('./kyc_images/'+file_name, 'wb') as new_file:
-            new_file.write(download_file)
-            print('--- kyc_img downloaded ---')
+        photo_file.download('./kyc_images/'+update.message.chat.username+'.jpg')
+        verified = True
+        local_database[update.message.chat.username]['verified'] = verified
+        buttons = [InlineKeyboardButton('Done', callback_data='done')]
+        context.bot.send_message(chat_id=update.effective_chat.id, text='Please click the button after you uploaded your image.', reply_markup=InlineKeyboardMarkup([buttons]))
         print('--- kyc_img ends ---')
         return kycDetailsState
 
@@ -95,7 +94,6 @@ def kyc_country(update: Update, context: CallbackContext):
     #updating country details
     local_database[update.callback_query.from_user.username]['country'] = update.callback_query.data
     local_database[update.callback_query.from_user.username]['currency'] = city_info[update.callback_query.data]['currency']
-    # local_database[update.message.chat.username]['userID'] = update.message.chat.username
 
     buttons = []
     for bank in city_info[update.callback_query.data]['bank']:
@@ -123,11 +121,12 @@ def kyc_bank(update: Update, context: CallbackContext):
             local_database[update.callback_query.from_user.username]['balance'] = 0
 
     username = update.callback_query.from_user.username
+    bank = local_database[username]['bank']
     country = local_database[username]['country']
     currency = local_database[username]['currency']
     print(username, country, currency, accountNumber, local_database[username]['verified'], sep=' | ')
     context.bot.send_message(chat_id=update.effective_chat.id, 
-        text=f'Thank you for verifying your details, {username} 😊. \n Country : {country} \n Currency : {currency} \n Account Number : {accountNumber}.')
+        text=f'Thank you for verifying your details, {username} 😊. \n Country : {country} \n Bank : {bank} \n Currency : {currency} \n Account Number : {accountNumber}. \n\nIf you wish to restart the KYC process, please enter /kyc again. \nIf you wish to start using the bot, please enter /start.')
     return ConversationHandler.END
 
 def build_menu(buttons,n_cols,header_buttons=None,footer_buttons=None):
@@ -267,8 +266,8 @@ transaction_process_conv = ConversationHandler(
 kyc_process_conv = ConversationHandler(
     entry_points=[CommandHandler(f'kyc', kyc_start)],
     states={
-        kycImgState : [MessageHandler(Filters.document, callback=kyc_img)],
-        kycDetailsState : [MessageHandler(Filters.text, callback=kyc_details)],
+        kycImgState : [MessageHandler(Filters.photo, callback=kyc_img)],
+        kycDetailsState : [CallbackQueryHandler(kyc_details)],
         kycCountryState : [CallbackQueryHandler(kyc_country)],
         kycBankState : [CallbackQueryHandler(kyc_bank)]
     },
