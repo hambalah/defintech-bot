@@ -11,8 +11,8 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 # updater = Updater(token='5668531051:AAEeX4OWwO1sOPvIYMI-2nUyhTcz_UWQVH4',use_context=True) #shawn's bot
-# updater = Updater(token='5828726712:AAH2mCRI9FKiQmZBgM_SEmHeQhMl23kEK88',use_context=True) #drago's bot
-updater = Updater(token='5860916892:AAF8lhYm-CZiNigpGxbJehVAckG6w2ekHhk',use_context=True) #kaydon's bot
+updater = Updater(token='5828726712:AAH2mCRI9FKiQmZBgM_SEmHeQhMl23kEK88',use_context=True) #drago's bot
+# updater = Updater(token='5860916892:AAF8lhYm-CZiNigpGxbJehVAckG6w2ekHhk',use_context=True) #kaydon's bot
 
 
 dp = updater.dispatcher
@@ -213,7 +213,6 @@ def transfer_process_start (update, context):
         return ConversationHandler.END
     else:
         context.bot.send_message(chat_id=update.effective_chat.id, text="Pin Confirmed!")
-        # buttons = [[KeyboardButton('Account Balance')], [KeyboardButton('/Transfer')], [KeyboardButton('/AddRecipient')]]
         buttons = []
         for key in local_database[update.message.chat.username]["addressBook"].keys():
             buttons.append([KeyboardButton(f'{key}')])
@@ -273,10 +272,6 @@ def add_recipient_handle (update, context):
 
 
 def handle_message(update, context):
-    global transferFlag
-    global receiverTeleId
-    global transferAmount
-
     if 'Account Balance' in update.message.text:
         update.message.reply_text(f'{update.message.chat.username}, your account balance is {local_database[update.message.chat.username]["balance"]}')
 
@@ -286,7 +281,7 @@ def handle_message(update, context):
 
 def startCommands(update: Update, context:CallbackContext):
     local_database[update.message.chat.username]["userID"] = chat_id=update.effective_chat.id
-    buttons = [[KeyboardButton('Account Balance')], [KeyboardButton('Transfer')], [KeyboardButton('Change Bank Account Details')]]
+    buttons = [[KeyboardButton('Account Balance')], [KeyboardButton('/Transfer')], [KeyboardButton('/AddRecipient')]]
     print(update)
     print()
     print(local_database)
