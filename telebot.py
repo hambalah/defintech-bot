@@ -3,16 +3,11 @@ from requests import *
 from telegram import *
 import logging
 import random
-
-# Enable logging
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=logging.INFO)
-
-logger = logging.getLogger(__name__)
+from user_db import *
 
 # updater = Updater(token='5668531051:AAEeX4OWwO1sOPvIYMI-2nUyhTcz_UWQVH4',use_context=True) #shawn's bot
-updater = Updater(token='5828726712:AAH2mCRI9FKiQmZBgM_SEmHeQhMl23kEK88',use_context=True) #drago's bot
-# updater = Updater(token='5860916892:AAF8lhYm-CZiNigpGxbJehVAckG6w2ekHhk',use_context=True) #kaydon's bot
+# updater = Updater(token='5828726712:AAH2mCRI9FKiQmZBgM_SEmHeQhMl23kEK88',use_context=True) #drago's bot
+updater = Updater(token='5860916892:AAF8lhYm-CZiNigpGxbJehVAckG6w2ekHhk',use_context=True) #kaydon's bot
 
 
 dp = updater.dispatcher
