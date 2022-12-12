@@ -3,7 +3,16 @@ from requests import *
 from telegram import *
 import logging
 import random
+from pprint import pprint
+
+# Enable logging
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
+
+logger = logging.getLogger(__name__)
+
 from user_db import *
+
 
 # updater = Updater(token='5668531051:AAEeX4OWwO1sOPvIYMI-2nUyhTcz_UWQVH4',use_context=True) #shawn's bot
 # updater = Updater(token='5828726712:AAH2mCRI9FKiQmZBgM_SEmHeQhMl23kEK88',use_context=True) #drago's bot
@@ -17,7 +26,7 @@ dp = updater.dispatcher
 
 local_database = {'shawntyw':{'bank':'posb', 'currency':'sgd', 'account':'12345', 'balance':100, 'pin':'1', 'userID':'', 'verified':True, "addressBook":{}}, 
             'kaydong':{'bank':'maybank','currency':'rmb','account':'23456','balance':200, 'pin':'1', 'userID':'', 'verified':False, "addressBook":{}},
-            'nmywrld':{'bank':'ocbc','currency':'hkd','account':'34567','balance':300, 'pin':'1', 'userID':'', 'verified':True, "addressBook":{}},
+            # 'nmywrld':{'bank':'ocbc','currency':'hkd','account':'34567','balance':300, 'pin':'1', 'userID':'', 'verified':False, "session": False, "addressBook":{}},
             'ivyyytan':{'bank':'ocbc','currency':'hkd','account':'78990','balance':300, 'pin':'1', 'userID':'', 'verified':True, "addressBook":{}},
             'hyperpencil':{'bank':'ocbc','currency':'hkd','account':'78990','balance':300, 'pin':'1', 'userID':'', 'verified':True, "addressBook":{}}
             }
@@ -36,14 +45,16 @@ logged_in = False
 verified = False
 displayed = ''
 
-#KYC Process
+### KYC Process
 kycImgState, kycDetailsState, kycCountryState, kycBankState = range(4)
 
 def kyc_start(update: Update, context: CallbackContext):
     print('--- kyc ---')
     global verified
+    local_database[update.message.chat.username] = {'bank':'','currency':'','account':'','balance':300, 'pin':'', 'userID':'', 'verified':False, "session": False, "addressBook":{}}
+    local_database[update.message.chat.username]['verified'] = False
     verified = local_database[update.message.chat.username]['verified']
-    if verified == False:
+    if verified != True:
         print('not verified')
         context.bot.send_message(chat_id=update.effective_chat.id, text='Starting your KYC process.', reply_markup=ReplyKeyboardRemove())
         context.bot.send_photo(chat_id=update.effective_chat.id, photo=open('./img/ic_w_date.jpg', 'rb'), caption='Please upload an image of yourself holding your IC, with the current date and time clearly visible.')
@@ -114,7 +125,7 @@ def kyc_bank(update: Update, context: CallbackContext):
         if accountNumber not in existingAccounts:
             newAccountNumber = True
             local_database[update.callback_query.from_user.username]['account'] = accountNumber
-            local_database[update.callback_query.from_user.username]['balance'] = 0
+            local_database[update.callback_query.from_user.username]['balance'] = 1000
 
     username = update.callback_query.from_user.username
     bank = local_database[username]['bank']
@@ -170,27 +181,6 @@ def createPin(update: Update, context: CallbackContext):
         context.bot.send_message(chat_id=update.effective_chat.id, text='please /login first')
 pin_handler = CommandHandler('createPin', createPin)
 dp.add_handler(pin_handler)
-
-
-def handle_message(update, context):
-    global transferFlag
-    global receiverTeleId
-    global transferAmount
-
-    if 'Account Balance' in update.message.text:
-        update.message.reply_text(f'{update.message.chat.username}, your account balance is {local_database[update.message.chat.username]["balance"]}')
-
-    if 'Account Details' in update.message.text:
-        update.message.reply_text(f'name: {update.message.chat.first_name}, account balance: XXX')
-
-
-def startCommands(update: Update, context:CallbackContext):
-    local_database[update.message.chat.username]["userID"] = chat_id=update.effective_chat.id
-    buttons = [[KeyboardButton('Account Balance')], [KeyboardButton('/Transfer')], [KeyboardButton('/AddRecipient')]]
-    print(update)
-    print()
-    print(local_database)
-    context.bot.send_message(chat_id=update.effective_chat.id, text='WELCOME!',reply_markup = ReplyKeyboardMarkup(buttons, one_time_keyboard=True))
 
 ### transfer process
 # used for transfer processx
@@ -262,61 +252,122 @@ def add_recipient_name (update, context):
 def add_recipient_handle (update, context):
     context.user_data["recipientHandle"] = update.message.text
     local_database[update.message.chat.username]["addressBook"][context.user_data["recipientName"]] = update.message.text
+    context.bot.send_message(chat_id=update.effective_chat.id, text= "New Recepient Successfuly Added! Type /start to access services.")
     return ConversationHandler.END
 
 
+### Pin login conv
+
+pinCreate, pinConfirm, pinState, = range(3)
+
+def login_conv_start (update, context):
+    if local_database[update.message.chat.username]["pin"] == "":
+        context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Enter A New Pin")
+        return pinCreate
+    else:
+        context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Enter Your Pin")
+        return pinState
+    
+def login_conv_create (update, context):
+    global tempPin
+    tempPin = update.message.text
+    context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Re-enter Your New Pin")
+    return pinConfirm
+
+def login_conv_confirm (update, context):
+    if tempPin != update.message.text:
+        context.bot.send_message(chat_id=update.effective_chat.id, text= "Login Failed! Type /start to try again")
+        return ConversationHandler.END
+    else: 
+        local_database[update.message.chat.username]["pin"] = tempPin
+        context.bot.send_message(chat_id=update.effective_chat.id, text= "Pin Successfully Created! type /start to access services")
+        return ConversationHandler.END
+
+
+def login_conv_state (update, context):
+    if update.message.text == local_database[update.message.chat.username]["pin"]:
+        local_database[update.message.chat.username]["session"] = True
+        context.bot.send_message(chat_id=update.effective_chat.id, text= "Login Success. Type /start to access services")
+        return ConversationHandler.END
+    else:
+        context.bot.send_message(chat_id=update.effective_chat.id, text= "Login Failed! Type /start to try again")
+        return ConversationHandler.END
+
+## general methods
 
 def handle_message(update, context):
     if 'Account Balance' in update.message.text:
         update.message.reply_text(f'{update.message.chat.username}, your account balance is {local_database[update.message.chat.username]["balance"]}')
+        update.message.reply_text(f'Type /start for more services')
 
-    if 'Account Details' in update.message.text:
-        update.message.reply_text(f'name: {update.message.chat.first_name}, account balance: XXX')
-
+    # if 'Account Details' in update.message.text:
+    #     update.message.reply_text(f'name: {update.message.chat.first_name}, account balance: XXX')
 
 def startCommands(update: Update, context:CallbackContext):
-    local_database[update.message.chat.username]["userID"] = chat_id=update.effective_chat.id
-    buttons = [[KeyboardButton('Account Balance')], [KeyboardButton('/Transfer')], [KeyboardButton('/AddRecipient')]]
+    if update.message.chat.username not in local_database.keys():
+        buttons = [[KeyboardButton('/KYC')]]
+    
+    elif local_database[update.message.chat.username]["session"] == False:
+        local_database[update.message.chat.username]["userID"] = update.effective_chat.id
+        buttons = [[KeyboardButton('/PinLogin')]]
+    
+    else:
+        local_database[update.message.chat.username]["userID"] = update.effective_chat.id
+        buttons = [[KeyboardButton('Account Balance')], [KeyboardButton('/Transfer')], [KeyboardButton('/AddRecipient')]]
+    
     print(update)
     print()
-    print(local_database)
+    pprint(local_database)
     context.bot.send_message(chat_id=update.effective_chat.id, text='WELCOME!',reply_markup = ReplyKeyboardMarkup(buttons, one_time_keyboard=True))
 
+def cancel (update, context):
+    context.bot.send_message(chat_id=update.effective_chat.id, text= "Action terminated. Type /start to access services again.")
+    return ConversationHandler.END
+
+
+login_conv = ConversationHandler(
+    entry_points=[CommandHandler(f'PinLogin', login_conv_start)],
+    states={
+        pinCreate : [MessageHandler(~Filters.command, callback=login_conv_create)],
+        pinConfirm : [MessageHandler(~Filters.command, callback=login_conv_confirm)],
+        pinState : [MessageHandler(~Filters.command, callback=login_conv_state)]},
+    fallbacks=[CommandHandler('cancel', cancel)]
+)
 
 transaction_process_conv = ConversationHandler(
     entry_points=[CommandHandler(f'Transfer', transfer_process)],
     states={
-        startstate : [MessageHandler(Filters.text, callback=transfer_process_start)],
-        receiverstate : [MessageHandler(Filters.text, callback=transfer_process_name)],
+        startstate : [MessageHandler(~Filters.command, callback=transfer_process_start)],
+        receiverstate : [MessageHandler(~Filters.command, callback=transfer_process_name)],
         trfamtstate : [MessageHandler(filters= Filters.regex('[0-9]'), callback=transfer_process_amt)],
-        confirmationstate: [MessageHandler(Filters.regex('yes|no'), callback=transfer_process_confirm)]
+        confirmationstate: [MessageHandler(Filters.regex('Yes|No'), callback=transfer_process_confirm)]
     },
-    fallbacks=[CommandHandler('start', startCommands)]
+    fallbacks=[CommandHandler('cancel', cancel)]
 )
 
 add_recipient_conv = ConversationHandler(
     entry_points= [CommandHandler(f'AddRecipient', newRecipient)],
     states = {
-        recipientName : [MessageHandler(Filters.text, callback= add_recipient_name)],
-        recipientHandle : [MessageHandler(Filters.text, callback= add_recipient_handle)]
+        recipientName : [MessageHandler(~Filters.command, callback= add_recipient_name)],
+        recipientHandle : [MessageHandler(~Filters.command, callback= add_recipient_handle)]
     },
-    fallbacks=[CommandHandler('start', startCommands)]
+    fallbacks=[CommandHandler('cancel', cancel)]
 )
 
-
 kyc_process_conv = ConversationHandler(
-    entry_points=[CommandHandler(f'kyc', kyc_start)],
+    entry_points=[CommandHandler(f'KYC', kyc_start)],
     states={
         kycImgState : [MessageHandler(Filters.photo, callback=kyc_img)],
         kycDetailsState : [CallbackQueryHandler(kyc_details)],
         kycCountryState : [CallbackQueryHandler(kyc_country)],
         kycBankState : [CallbackQueryHandler(kyc_bank)]
     },
-    fallbacks=[CommandHandler('start', startCommands)]
+    fallbacks=[CommandHandler('cancel', cancel)]
 )
 
 
 dp.add_handler(CommandHandler('start', startCommands))
+dp.add_handler(login_conv)
 dp.add_handler(transaction_process_conv)
 dp.add_handler(add_recipient_conv)
 dp.add_handler(kyc_process_conv)
@@ -324,3 +375,14 @@ dp.add_handler(MessageHandler(Filters.text, handle_message))
 dp.add_handler(CommandHandler('login', login))
 
 updater.start_polling()
+
+
+
+
+# /start 
+#   if telehandle not in db, provide only 1 option to kyc
+#   if in db, refresh loginIDtoken or pin (have to decide)
+#   see full list of commands
+    # - lsit all commands
+
+
