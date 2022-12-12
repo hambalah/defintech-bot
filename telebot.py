@@ -190,14 +190,14 @@ def handle_message(update, context):
 
 
 def startCommands(update: Update, context:CallbackContext):
-    database[update.message.chat.username]["userID"] = chat_id=update.effective_chat.id
+    local_database[update.message.chat.username]["userID"] = chat_id=update.effective_chat.id
     buttons = [[KeyboardButton('Account Balance')], [KeyboardButton('/Transfer')], [KeyboardButton('/AddRecipient')]]
     print(update)
     print()
-    print(database)
+    print(local_database)
     context.bot.send_message(chat_id=update.effective_chat.id, text='WELCOME!',reply_markup = ReplyKeyboardMarkup(buttons, one_time_keyboard=True))
 
-# transfer process
+### transfer process
 # used for transfer processx
 startstate, receiverstate, trfamtstate, confirmationstate = range(4)
 
@@ -215,7 +215,7 @@ def transfer_process_start (update, context):
         context.bot.send_message(chat_id=update.effective_chat.id, text="Pin Confirmed!")
         # buttons = [[KeyboardButton('Account Balance')], [KeyboardButton('/Transfer')], [KeyboardButton('/AddRecipient')]]
         buttons = []
-        for key in database[update.message.chat.username]["addressBook"].keys():
+        for key in local_database[update.message.chat.username]["addressBook"].keys():
             buttons.append([KeyboardButton(f'{key}')])
         
         context.bot.send_message(chat_id=update.effective_chat.id, text='Please select Recipient!',reply_markup = ReplyKeyboardMarkup(buttons, one_time_keyboard=True))
@@ -223,7 +223,7 @@ def transfer_process_start (update, context):
         return receiverstate
 
 def transfer_process_name (update, context):
-    context.user_data["receiverTeleId"] = database[update.message.chat.username]["addressBook"][update.message.text]
+    context.user_data["receiverTeleId"] = local_database[update.message.chat.username]["addressBook"][update.message.text]
     context.bot.send_message(chat_id=update.effective_chat.id, text="Please Input Transfer Amount")
     return trfamtstate
 
@@ -249,12 +249,6 @@ def transfer_process_confirm(update, context):
         return ConversationHandler.END
     else:
         return startstate
-    
-# def transfer_process_complete(update, context):
-#     context.bot.send_message(chat_id=update.effective_chat.id, text=f'Transfer Successful!')
-#         # send "Transfer has been made"
-
-#     return ConversationHandler.END
 
 
 #### New recipient process
@@ -267,13 +261,13 @@ def newRecipient (update, context):
 
 def add_recipient_name (update, context):
     context.user_data["recipientName"] = update.message.text
-    database[update.message.chat.username]["addressBook"][update.message.text] = ""
+    local_database[update.message.chat.username]["addressBook"][update.message.text] = ""
     context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Enter New Recipient telegram Handle (without @)")
     return recipientHandle
 
 def add_recipient_handle (update, context):
     context.user_data["recipientHandle"] = update.message.text
-    database[update.message.chat.username]["addressBook"][context.user_data["recipientName"]] = update.message.text
+    local_database[update.message.chat.username]["addressBook"][context.user_data["recipientName"]] = update.message.text
     return ConversationHandler.END
 
 
