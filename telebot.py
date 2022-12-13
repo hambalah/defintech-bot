@@ -325,6 +325,9 @@ def cancel (update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text= "Action terminated. Type /start to access services again.")
     return ConversationHandler.END
 
+def projDeck(update, context):
+    context.bot.send_message(chat_id=update.effective_chat.id, text= "<a href='https://docs.google.com/presentation/d/1RwCYbNlhTCq2bdTVN-CEiAhLs0ZSmj4HfukaikplQok/edit#slide=id.g1b257fcd1af_1_5'>Project Deck</a> <br> <a href='https://github.com/hambalah/smuFinTech-G3'>GitHub</a>", parse_mode=ParseMode.HTML)
+
 
 login_conv = ConversationHandler(
     entry_points=[CommandHandler(f'PinLogin', login_conv_start)],
@@ -368,7 +371,7 @@ kyc_process_conv = ConversationHandler(
 
 
 dp.add_handler(CommandHandler('start', startCommands))
-dp.add_handler(CommandHandler('Deck', projDeck))
+dp.add_handler(CommandHandler('deck', projDeck))
 dp.add_handler(login_conv)
 dp.add_handler(transaction_process_conv)
 dp.add_handler(add_recipient_conv)
