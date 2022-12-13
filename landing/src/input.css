@@ -66,7 +66,8 @@
     }
 
     .round-text {
-        @apply hidden md:block pl-20 lg:pl-40;
+        /* @apply hidden md:block pl-5 lg:pl-10; */
+        @apply hidden md:block pl-0;
     }
 
     .round-text svg{

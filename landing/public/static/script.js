@@ -5,15 +5,19 @@ timeLine.to('.pre-loader > .overlay', {top: '75%'})
 timeLine.to('.pre-loader > .overlay', {top: '50%', delay: 0.5})
 timeLine.to('.pre-loader > .overlay', {top: '25%', delay: 0.5})
 timeLine.to('.pre-loader > .overlay', {top: '0', delay: 0.5})
-timeLine.to('.pre-loader', {width: '80vw', left:0, top: '40%'})
+timeLine.to('.pre-loader', {width: '85vw', left:0, top: '42%'})
 timeLine.set('.pre-loader', {'z-index': -20})
 
 // nav
 timeLine.fromTo('nav', {y:-100}, {y:0, opacity:1})
 
-// app motto
+//round text
+document.getElementById('roundText').style.paddingLeft = 0;
+
+// animation transition
 timeLine.fromTo('.first-row .bold-text', {y:100}, {y:0, opacity:1}, "<")
 timeLine.fromTo('.second-row .bold-text', {y:100}, {y:0, opacity:1, delay:0.5})
+timeLine.fromTo('.round-text', {y:100}, {y:0, opacity:1, delay:0.5})
 
 // circle menu
 // document.getElementById('circleMenu').style.position = 'absolute'
