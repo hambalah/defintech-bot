@@ -16,7 +16,9 @@
 
 @layer components {
 	nav > img {
-        width: 120px;
+        width: 250px;
+        height: 25px;
+        @apply round-full;
     }
 
     nav a {
@@ -33,16 +35,18 @@
 
     .nav-links {
         @apply hidden md:flex gap-4 lg:gap-8 lg:mx-16 xl:mx-20;
+        margin-left: 0rem;
+        margin-right: 1rem;
     }
 
     .row {
-        @apply flex p-4 justify-center md:justify-start;
+        @apply flex p-2 justify-center md:justify-start;
         @apply items-center gap-4 md:gap-8;
         @apply lg:gap-12 text-center md:text-left;
     }
 
     .first-row {
-        @apply md:pt-8 lg:pt-16;
+        @apply md:pt-8 lg:pt-10;
     }
 
     .bold-text {
@@ -87,5 +91,9 @@
     .pre-loader > .overlay {
         @apply absolute inset-x-0 bottom-0;
         @apply top-full bg-black bg-opacity-10 -z-0;
+    }
+
+    .emphasis{
+        @apply font-bold underline;
     }
 }
