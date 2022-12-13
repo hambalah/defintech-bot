@@ -130,8 +130,6 @@ dmypy.json
 .pyre/
 .DS_Store
 
-#ignoring for future
-firebase_db/
-serviceAccountKey.json
-user_db.py
 *.json
+firebase_db/
+user_db.py
