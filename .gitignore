@@ -131,6 +131,6 @@ dmypy.json
 .DS_Store
 
 #ignoring for future
-.firebase_db/
+firebase_db/
 serviceAccountKey.json
 user_db.py
