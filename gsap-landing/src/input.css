@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    body {
+        @apply overflow-hidden h-screen;
+        font-family: 'Be Vietnam Pro', sans-serif;
+    }
+}
+
+nav {
+    @apply flex p-4 md:py-8 md:px-4 lg:p-12;
+    @apply justify-center items-center gap-4;
+}
+
+@layer components {
+	nav > img {
+        width: 120px;
+    }
+
+    nav a {
+        @apply underline;
+    }
+
+    .cta {
+        @apply rounded bg-black text-white py-2 px-4;
+    }
+
+    nav .cta {
+        @apply hidden md:inline-block;
+    }
+
+    .nav-links {
+        @apply hidden md:flex gap-4 lg:gap-8 lg:mx-16 xl:mx-20;
+    }
+}
