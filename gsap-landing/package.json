@@ -1,6 +1,6 @@
 {
     "scripts": {
-        "build-css": "npx tailwindcss -i ./src/input.css -o ./build/static/output.css --watch"
+        "public-css": "npx tailwindcss -i ./src/input.css -o ./public/static/output.css --watch"
     },
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "^6.2.1",
