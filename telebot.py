@@ -11,12 +11,12 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
-from user_db import *
+# from user_db import *
 
 
 # updater = Updater(token='5668531051:AAEeX4OWwO1sOPvIYMI-2nUyhTcz_UWQVH4',use_context=True) #shawn's bot
-# updater = Updater(token='5828726712:AAH2mCRI9FKiQmZBgM_SEmHeQhMl23kEK88',use_context=True) #drago's bot
-updater = Updater(token='5860916892:AAF8lhYm-CZiNigpGxbJehVAckG6w2ekHhk',use_context=True) #kaydon's bot
+updater = Updater(token='5828726712:AAH2mCRI9FKiQmZBgM_SEmHeQhMl23kEK88',use_context=True) #drago's bot
+# updater = Updater(token='5860916892:AAF8lhYm-CZiNigpGxbJehVAckG6w2ekHhk',use_context=True) #kaydon's bot
 
 
 dp = updater.dispatcher
@@ -24,12 +24,13 @@ dp = updater.dispatcher
 #telehamdle linked with account details
 
 
-local_database = {'shawntyw':{'bank':'posb', 'currency':'sgd', 'account':'12345', 'balance':100, 'pin':'1', 'userID':'', 'verified':True, "addressBook":{}}, 
-            'kaydong':{'bank':'maybank','currency':'rmb','account':'23456','balance':200, 'pin':'1', 'userID':'', 'verified':False, "addressBook":{}},
-            # 'nmywrld':{'bank':'ocbc','currency':'hkd','account':'34567','balance':300, 'pin':'1', 'userID':'', 'verified':False, "session": False, "addressBook":{}},
-            'ivyyytan':{'bank':'ocbc','currency':'hkd','account':'78990','balance':300, 'pin':'1', 'userID':'', 'verified':True, "addressBook":{}},
-            'hyperpencil':{'bank':'ocbc','currency':'hkd','account':'78990','balance':300, 'pin':'1', 'userID':'', 'verified':True, "addressBook":{}}
-            }
+# local_database = {'shawntyw':{'bank':'posb', 'currency':'sgd', 'account':'12345', 'balance':100, 'pin':'1', 'userID':'', 'verified':True, "addressBook":{}}, 
+#             'kaydong':{'bank':'maybank','currency':'rmb','account':'23456','balance':200, 'pin':'1', 'userID':'', 'verified':False, "addressBook":{}},
+#             # 'nmywrld':{'bank':'ocbc','currency':'hkd','account':'34567','balance':300, 'pin':'1', 'userID':'', 'verified':False, "session": False, "addressBook":{}},
+#             'ivyyytan':{'bank':'ocbc','currency':'hkd','account':'78990','balance':300, 'pin':'1', 'userID':'', 'verified':True, "addressBook":{}},
+#             'hyperpencil':{'bank':'ocbc','currency':'hkd','account':'78990','balance':300, 'pin':'1', 'userID':'', 'verified':True, "addressBook":{}}
+#             }
+local_database = {}
 
 db = ref.get()
 
@@ -88,6 +89,7 @@ def kyc_details(update: Update, context: CallbackContext):
     global city_info
     print('--- kyc_details ---')
 
+    context.bot.send_message(chat_id=update.effective_chat.id, text='<Finverse link goes here>')
     buttons = []
     for city in city_info.keys():
         buttons.append(InlineKeyboardButton(city, callback_data=city))
@@ -190,16 +192,16 @@ startstate, receiverstate, trfamtstate, confirmationstate = range(4)
 
 def transfer_process(update, context):
     # context.bot.send_message(chat_id=update.effective_chat.id, text="Please Input Receivers' Telegram handle (without @)")
-    context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Enter Your Pin")
+    context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Enter Password To Access Transfer Function")
     return startstate
 
 def transfer_process_start (update, context):
     context.user_data["pin"] = update.message.text
     if context.user_data["pin"] != local_database[update.message.chat.username]["pin"]:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Pin Incorrect!")
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Password Incorrect!")
         return ConversationHandler.END
     else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Pin Confirmed!")
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Password Confirmed!")
         buttons = []
         for key in local_database[update.message.chat.username]["addressBook"].keys():
             buttons.append([KeyboardButton(f'{key}')])
@@ -232,6 +234,7 @@ def transfer_process_confirm(update, context):
         
         context.bot.send_message(chat_id=update.effective_chat.id, text=f'Transfer Successful!')
         context.bot.send_message(chat_id=local_database[context.user_data["receiverTeleId"]]['userID'], text='you have received money!')
+        context.bot.send_message(chat_id=local_database[context.user_data["receiverTeleId"]]['userID'], text=f'@{update.message.chat.username} has sent you ${context.user_data["transferAmount"]}')
         return ConversationHandler.END
     else:
         return startstate
@@ -253,6 +256,8 @@ def add_recipient_name (update, context):
 
 def add_recipient_handle (update, context):
     context.user_data["recipientHandle"] = update.message.text
+    context.bot.send_message(chat_id=update.effective_chat.id, text='<Finverse link goes here>')
+
     local_database[update.message.chat.username]["addressBook"][context.user_data["recipientName"]] = update.message.text
     context.bot.send_message(chat_id=update.effective_chat.id, text= "New Recepient Successfuly Added! Type /start to access services.")
     return ConversationHandler.END
@@ -264,16 +269,17 @@ pinCreate, pinConfirm, pinState, = range(3)
 
 def login_conv_start (update, context):
     if local_database[update.message.chat.username]["pin"] == "":
-        context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Enter A New Pin")
+        context.bot.send_message(chat_id=update.effective_chat.id, text= "You have to create a password before continuing.")
+        context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Enter A New Password")
         return pinCreate
     else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Enter Your Pin")
+        context.bot.send_message(chat_id=update.effective_chat.id, text= "Enter Password To Unlock Account")
         return pinState
     
 def login_conv_create (update, context):
     global tempPin
     tempPin = update.message.text
-    context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Re-enter Your New Pin")
+    context.bot.send_message(chat_id=update.effective_chat.id, text= "Please Re-enter Your New Password")
     return pinConfirm
 
 def login_conv_confirm (update, context):
@@ -282,7 +288,7 @@ def login_conv_confirm (update, context):
         return ConversationHandler.END
     else: 
         local_database[update.message.chat.username]["pin"] = tempPin
-        context.bot.send_message(chat_id=update.effective_chat.id, text= "Pin Successfully Created! type /start to access services")
+        context.bot.send_message(chat_id=update.effective_chat.id, text= "Password Successfully Created! type /start to access services")
         return ConversationHandler.END
 
 
@@ -310,7 +316,7 @@ def startCommands(update: Update, context:CallbackContext):
     
     elif local_database[update.message.chat.username]["session"] == False:
         local_database[update.message.chat.username]["userID"] = update.effective_chat.id
-        buttons = [[KeyboardButton('/PinLogin')]]
+        buttons = [[KeyboardButton('/Login')]]
     
     else:
         local_database[update.message.chat.username]["userID"] = update.effective_chat.id
@@ -330,7 +336,7 @@ def projDeck(update, context):
 
 
 login_conv = ConversationHandler(
-    entry_points=[CommandHandler(f'PinLogin', login_conv_start)],
+    entry_points=[CommandHandler(f'Login', login_conv_start)],
     states={
         pinCreate : [MessageHandler(~Filters.command, callback=login_conv_create)],
         pinConfirm : [MessageHandler(~Filters.command, callback=login_conv_confirm)],
@@ -376,6 +382,7 @@ dp.add_handler(login_conv)
 dp.add_handler(transaction_process_conv)
 dp.add_handler(add_recipient_conv)
 dp.add_handler(kyc_process_conv)
+dp.add_handler(CommandHandler('start', startCommands))
 dp.add_handler(MessageHandler(Filters.text, handle_message))
 dp.add_handler(CommandHandler('login', login))
 
