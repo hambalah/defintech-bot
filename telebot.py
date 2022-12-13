@@ -32,7 +32,7 @@ dp = updater.dispatcher
 #             }
 local_database = {}
 
-db = ref.get()
+# db = ref.get()
 
 city_info = {'Singapore':{'bank': ['UOB', 'DBS', 'OCBC'], 'currency': 'sgd'}, 
             'Malaysia':{'bank':['MayBank', 'AHB'], 'currency':'rmb'}, 
