@@ -332,7 +332,7 @@ def cancel (update, context):
     return ConversationHandler.END
 
 def projDeck(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text= "<a href='https://docs.google.com/presentation/d/1RwCYbNlhTCq2bdTVN-CEiAhLs0ZSmj4HfukaikplQok/edit#slide=id.g1b257fcd1af_1_5'>Project Deck</a> <br> <a href='https://github.com/hambalah/smuFinTech-G3'>GitHub</a>", parse_mode=ParseMode.HTML)
+    context.bot.send_message(chat_id=update.effective_chat.id, text= "<a href='https://docs.google.com/presentation/d/1RwCYbNlhTCq2bdTVN-CEiAhLs0ZSmj4HfukaikplQok/edit#slide=id.g1b257fcd1af_1_5'>Project Deck</a> <br> <a href='https://github.com/hambalah/defintech-bot'>GitHub</a>", parse_mode=ParseMode.HTML)
 
 
 login_conv = ConversationHandler(
