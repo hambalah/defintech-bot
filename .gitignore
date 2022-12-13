@@ -134,3 +134,4 @@ dmypy.json
 firebase_db/
 serviceAccountKey.json
 user_db.py
+*.json
