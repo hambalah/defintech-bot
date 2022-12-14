@@ -3,7 +3,7 @@
 
 ### :bank: [Website](https://defintech-bot.vercel.app/)
 #### :envelope: Link to [Telegram Bot](https://t.me/DeFintechBot)
-Join the telegram bot and **run telebot.py**
+Join the telegram bot and **run telebot.py** locally
 
 #### :desktop_computer: Running on localhost
 ```
