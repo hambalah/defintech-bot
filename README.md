@@ -8,7 +8,7 @@ Join the telegram bot and **run telebot.py** locally
 #### :desktop_computer: Running on localhost
 ```
 npm install -g live-server
-liver-server public
+live-server public
 ```
 
 
